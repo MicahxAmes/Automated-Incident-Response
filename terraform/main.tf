@@ -19,6 +19,33 @@ resource "aws_iam_role" "lambda_execution_role" {
   })
 }
 
+resource "aws_iam_policy" "lambda_s3_read_policy" {
+  name        = "lambda_s3_read_policy"
+  description = "IAM policy for reading objects from S3 bucket"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "s3:GetObject",
+        ],
+        Effect   = "Allow",
+        Resource = [
+          "arn:aws:s3:::${var.lambda_s3_bucket}/*",
+        ],
+      },
+    ],
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_s3_read_policy_attachment" {
+  role       = aws_iam_role.lambda_execution_role.name
+  policy_arn = aws_iam_policy.lambda_s3_read_policy.arn
+}
+
+
+
 resource "aws_lambda_function" "incident_response" {
   function_name = "incidentResponseFunction"
 
